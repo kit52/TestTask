@@ -104,3 +104,10 @@ input {
 .modify {
   cursor: not-allowed;
 }
+.bold {
+  color: rgb(104, 155, 250);
+}
+th img {
+  display: block;
+  margin: 0 auto;
+}
