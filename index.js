@@ -3,13 +3,39 @@ import * as DB from "./DB.js"
 let currentPage = 0;
 let arr = [...DB.db];
 const color = [];
-let sortStateIndex = null;
+let sortDirection = false;
+const firstName = document.querySelector("#firstName");
+const lastName = document.querySelector('#lastName');
+const about = document.querySelector("#about");
+const eyeColor = document.querySelector("#eyeColor");
 /* Create array unique color from get data */
 arr.forEach((item) => {
     color.push(item.eyeColor)
 })
 const uniqueColor = [...new Set(color)];
 const table = document.querySelector('.table');
+
+/* func wrapper for func show/hide collumn */
+function collumnObserver() {
+    const checkbox = document.querySelector(".tableSettings").querySelectorAll("input");
+    checkbox.forEach((item) => {
+        item.addEventListener('change', () => {
+            const collumnClass = item.dataset.collumnClass;
+            document.querySelectorAll(`.${collumnClass}`).forEach(i => i.classList.toggle("hide"))
+        })
+    })
+}
+
+/* func for colouring selected item */
+function changeSelectColor(select) {
+    const selectIndex = select.options.selectedIndex;
+    select.style = `background:${select.options[selectIndex].classList.value}`
+}
+/* func for colouring sorted collumn title */
+function changeSelectedCollumnColor(i) {
+    document.querySelectorAll("th").forEach(item => item.classList.remove("bold"))
+    i.classList.add("bold");
+}
 
 /* a function for rendering content in a table according to the page and saving sorting by the selected column */
 function renderTable(currentPage) {
@@ -20,22 +46,18 @@ function renderTable(currentPage) {
     table.querySelector('tbody').remove()
     for (let i = 0 + x; i <= 9 + x; i++) {
         let row = `<tr key = ${arr[i].id}>
-            <td> ${arr[i].name.firstName}</td> 
-            <td>${arr[i].name.lastName}</td>
-            <td class = "about ">${arr[i].about}</td>
-            <td class = ${arr[i].eyeColor}></td>
+            <td class = "col-1 ${!firstName.checked ? "hide" : ""}"> ${arr[i].name.firstName}</td>
+            <td class = "col-2 ${!lastName.checked ? "hide" : ""}">${arr[i].name.lastName}</td>
+            <td class = "about col-3 ${!about.checked ? "hide" : ""}">${arr[i].about}</td>
+            <td class = "col-4   ${arr[i].eyeColor} ${!eyeColor.checked ? "hide" : ""}"></td>
         </tr>`
         str = str + row;
     }
     tbody.innerHTML = str;
     table.append(tbody)
-
-    if (sortStateIndex != null) {
-        sortTable(sortStateIndex)
-    }
 }
 
-/*function for create dinamyc paginations */
+/*function for create  paginations on page */
 function renderPagination() {
     const paginationsDiv = document.createElement('div');
     const counterPages = arr.length / 10;
@@ -45,7 +67,6 @@ function renderPagination() {
         let span = `<span ${i == currentPage + 1 ? 'class = "pageNumber active"' : "class = pageNumber"}>${i}</span>`
         pages = pages + span
     }
-
     paginationsDiv.innerHTML = pages;
     const paginations = document.querySelector(".paginations").appendChild(paginationsDiv);
 
@@ -59,49 +80,45 @@ function renderPagination() {
     })
 }
 
-/*Function for sorting table row A-Z */
+/*Function for sorting table row A-Z Z-A*/
 function sortTable(index) {
-    sortStateIndex = index;
-    const tbody = document.querySelector('tbody');
-    function compare(rowA, rowB) {
-        const rowDataA = rowA.cells[index].innerHTML; /* get data from collumn[i]*/
-        const rowDataB = rowB.cells[index].innerHTML;
-        if (rowDataA == "" || rowDataB == "") {
-            const colorA = rowA.cells[index].classList.value;
-            const colorB = rowB.cells[index].classList.value;
-            if (colorA < colorB) return -1;
-            else if (colorA > colorB) return 1;
-            return 0;
-        } else {
-            if (rowDataA < rowDataB) return - 1;   /* comparing data from column cells for sorting*/
-            else if (rowDataA > rowDataB) return 1;
-            return 0;
+    function sortData(a, b) {
+        switch (index) {
+            case 0:
+                if (a.name.firstName < b.name.firstName) return -1;
+                else if (a.name.firstName > b.name.firstName) return 1;
+                return 0;
+            case 1:
+                if (a.name.lastName < b.name.lastName) return -1;
+                else if (a.name.lastName > b.name.lastName) return 1;
+                return 0;
+            case 2:
+                if (a.about < b.about) return -1;
+                else if (a.about > b.about) return 1;
+                return 0;
+            case 3:
+                if (a.eyeColor < b.eyeColor) return -1;
+                else if (a.eyeColor > b.eyeColor) return 1;
+                return 0;
+            default:
+                break;
         }
     }
-
-    const rows = [].slice.call(tbody.rows); /*converting a pseudo array to an array */
-    rows.sort(compare) /*Sorting with use our method sort */
-    table.removeChild(tbody); /* clear table content */
-    for (let i = 0; i < rows.length; i++) {
-        tbody.appendChild(rows[i])
+    if (sortDirection) {
+        arr.sort(sortData).reverse()
+        sortDirection = !sortDirection
+    } else {
+        arr.sort(sortData)
+        sortDirection = !sortDirection
     }
-    table.appendChild(tbody)
-
+    renderTable(currentPage)
 }
 
-/* func for colouring selected item */
-function changeSelectColor(select) {
-    const selectIndex = select.options.selectedIndex;
-    select.style = `background:${select.options[selectIndex].classList.value}`
-}
 
-function changeSelectedCollumnColor(i) {
-    document.querySelectorAll("th").forEach(item => item.classList.remove("bold"))
-    i.classList.add("bold")
-}
 
 /* func handler for all click by table */
 const tableClickHandler = (e) => {
+    /* handler for click on header table */
     const container = document.querySelector(".container");
     const target = e.target;
     if (target.nodeName == "TH") {
@@ -142,7 +159,7 @@ const tableClickHandler = (e) => {
         changeSelectColor(select);
         select.addEventListener('change', () => changeSelectColor(select))
         const save = document.querySelector('.btn__save');
-
+        /* Handler saving data after changing */
         save.addEventListener("click", (e) => {
             const form = divBody.querySelector('form');
             const firstNameValue = form.querySelector(`#firstName${id}`).value;
@@ -166,13 +183,16 @@ const tableClickHandler = (e) => {
             } else {
                 container.innerHTML = ''
             }
-
             table.addEventListener("click", tableClickHandler)
             table.classList.remove("modify")
         })
     }
 }
-table.addEventListener('click', tableClickHandler)
 
+
+
+
+table.addEventListener('click', tableClickHandler)
 renderTable(currentPage)
+collumnObserver()
 renderPagination()

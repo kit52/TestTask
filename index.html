@@ -11,20 +11,28 @@
 
 <body>
     <main class="main">
-        <table class="table">
-            <thead class="thead">
-                <tr>
-                    <th>Имя <img src="./icons/sortIcon.png" alt="sortIcon" /></th>
-                    <th>Фамилия <img src="./icons/sortIcon.png" alt="sortIcon" /></th>
-                    <th>Описание <img src="./icons/sortIcon.png" alt="sortIcon" /></th>
-                    <th>Цвет глаз <img src="./icons/sortIcon.png" alt="sortIcon" /></th>
-                </tr>
-            </thead>
-            <tbody>
+        <div class="tableSettings">
+            <label> <input type="checkbox" id="firstName" data-collumn-class="col-1" checked /> Имя </label>
+            <label><input type="checkbox" id="lastName" data-collumn-class="col-2" checked />Фамилия</label>
+            <label><input type="checkbox" id="about" data-collumn-class="col-3" checked />Описание</label>
+            <label><input type="checkbox" id="eyeColor" data-collumn-class="col-4" checked /> Цвет глаз</label>
+        </div>
+        <div class="content">
+            <table class="table">
+                <thead class="thead">
+                    <tr>
+                        <th class="col-1">Имя <img src="./icons/sort.svg" alt="sortIcon" class="sortIcon" /></th>
+                        <th class="col-2">Фамилия <img src="./icons/sort.svg" alt="sortIcon" class="sortIcon" /></th>
+                        <th class="col-3">Описание <img src="./icons/sort.svg" alt="sortIcon" class="sortIcon" /></th>
+                        <th class="col-4">Цвет глаз <img src="./icons/sort.svg" alt="sortIcon" class="sortIcon" /></th>
+                    </tr>
+                </thead>
+                <tbody>
 
-            </tbody>
-        </table>
-        <div class="container"></div>
+                </tbody>
+            </table>
+            <div class="container"></div>
+        </div>
     </main>
     <div class="paginations"></div>
 
