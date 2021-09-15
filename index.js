@@ -1,19 +1,20 @@
 
-import * as DB from "./DB.js"
+
 let currentPage = 0;
-let arr = [...DB.db];
-const color = [];
+let arr = [...db];
 let sortDirection = false;
 const firstName = document.querySelector("#firstName");
 const lastName = document.querySelector('#lastName');
 const about = document.querySelector("#about");
-const eyeColor = document.querySelector("#eyeColor");
-/* Create array unique color from get data */
-arr.forEach((item) => {
-    color.push(item.eyeColor)
-})
-const uniqueColor = [...new Set(color)];
+const elEyeColor = document.querySelector("#eyeColor");
 const table = document.querySelector('.table');
+const pageSize = 10;
+/* Create array unique color from get data */
+const color = new Set()
+arr.forEach((item) => {
+    color.add(item.eyeColor)
+})
+const uniqueColor = [...color];
 
 /* func wrapper for func show/hide collumn */
 function collumnObserver() {
@@ -41,15 +42,16 @@ function changeSelectedCollumnColor(i) {
 function renderTable(currentPage) {
     const tbody = document.createElement('tbody');
     let str = "";
-    const x = 10 * currentPage
+
+    const startElementNumber = pageSize * currentPage;
     /* Create dinamyc content for tbody  */
     table.querySelector('tbody').remove()
-    for (let i = 0 + x; i <= 9 + x; i++) {
+    for (let i = 0 + startElementNumber; i <= 9 + startElementNumber; i++) {
         let row = `<tr key = ${arr[i].id}>
             <td class = "col-1 ${!firstName.checked ? "hide" : ""}"> ${arr[i].name.firstName}</td>
             <td class = "col-2 ${!lastName.checked ? "hide" : ""}">${arr[i].name.lastName}</td>
             <td class = "about col-3 ${!about.checked ? "hide" : ""}">${arr[i].about}</td>
-            <td class = "col-4   ${arr[i].eyeColor} ${!eyeColor.checked ? "hide" : ""}"></td>
+            <td class = "col-4   ${arr[i].eyeColor} ${!elEyeColor.checked ? "hide" : ""}"></td>
         </tr>`
         str = str + row;
     }
@@ -60,7 +62,9 @@ function renderTable(currentPage) {
 /*function for create  paginations on page */
 function renderPagination() {
     const paginationsDiv = document.createElement('div');
-    const counterPages = arr.length / 10;
+    const counterPages = arr.length / pageSize;
+    const paginations = document.querySelector(".paginations");
+    paginations.innerHTML = '';
     let pages = "";
 
     for (let i = 1; i <= counterPages; i++) {
@@ -68,7 +72,7 @@ function renderPagination() {
         pages = pages + span
     }
     paginationsDiv.innerHTML = pages;
-    const paginations = document.querySelector(".paginations").appendChild(paginationsDiv);
+    paginations.appendChild(paginationsDiv);
 
     paginations.addEventListener("click", (e) => {
         if (e.target.classList == "pageNumber") {
@@ -111,16 +115,48 @@ function sortTable(index) {
         arr.sort(sortData)
         sortDirection = !sortDirection
     }
+    currentPage = 0;
+    renderPagination()
     renderTable(currentPage)
 }
+/* Handler saving data after changing */
+function saveChangingTable(save, index, container, id, select, element) {
+    save.addEventListener("click", () => {
+        const form = document.querySelector('form');
+        const firstNameValue = form.querySelector(`#firstName${id}`).value;
+        const lastNameValue = form.querySelector(`#lastName${id}`).value;
+        const aboutValue = form.querySelector(`#about${id}`).value;
+        const selectItemValue = select.options[select.options.selectedIndex].classList.value;
 
-
+        if (firstNameValue != element.name.firstName || lastNameValue != element.name.lastName ||
+            aboutValue != element.about || selectItemValue != element.eyeColor) {
+            arr[index] = {
+                ...arr[index],
+                name: {
+                    firstName: firstNameValue,
+                    lastName: lastNameValue
+                },
+                about: aboutValue,
+                eyeColor: selectItemValue
+            }
+            container.innerHTML = ''
+            renderTable(currentPage)
+        } else {
+            container.innerHTML = ''
+        }
+        table.addEventListener("click", tableClickHandler)
+        table.classList.remove("modify")
+    })
+}
 
 /* func handler for all click by table */
 const tableClickHandler = (e) => {
-    /* handler for click on header table */
     const container = document.querySelector(".container");
     const target = e.target;
+    const id = target.parentNode.getAttribute("key");
+    let index = arr.findIndex(i => i.id == id);
+    const element = arr[index];
+    /* handler for click on header table */
     if (target.nodeName == "TH") {
         changeSelectedCollumnColor(target)
         sortTable(target.cellIndex)
@@ -131,10 +167,6 @@ const tableClickHandler = (e) => {
         /* handler click by content row*/
         table.removeEventListener("click", tableClickHandler);
         table.classList.add("modify");
-        const id = target.parentNode.getAttribute("key");
-        let index = arr.findIndex(i => i.id == id);
-        const element = arr[index];
-
         const optionColor = uniqueColor.map((item) => {
             return `<option style=background:${item}  ${item == element.eyeColor ? "selected" : ""} class = ${item}>
                     </option>`
@@ -159,33 +191,8 @@ const tableClickHandler = (e) => {
         changeSelectColor(select);
         select.addEventListener('change', () => changeSelectColor(select))
         const save = document.querySelector('.btn__save');
-        /* Handler saving data after changing */
-        save.addEventListener("click", (e) => {
-            const form = divBody.querySelector('form');
-            const firstNameValue = form.querySelector(`#firstName${id}`).value;
-            const lastNameValue = form.querySelector(`#lastName${id}`).value;
-            const aboutValue = form.querySelector(`#about${id}`).value;
-            const selectItemValue = select.options[select.options.selectedIndex].classList.value;
 
-            if (firstNameValue != element.name.firstName || lastNameValue != element.name.lastName ||
-                aboutValue != element.about || selectItemValue != element.eyeColor) {
-                arr[index] = {
-                    ...arr[index],
-                    name: {
-                        firstName: firstNameValue,
-                        lastName: lastNameValue
-                    },
-                    about: aboutValue,
-                    eyeColor: selectItemValue
-                }
-                container.innerHTML = ''
-                renderTable(currentPage)
-            } else {
-                container.innerHTML = ''
-            }
-            table.addEventListener("click", tableClickHandler)
-            table.classList.remove("modify")
-        })
+        saveChangingTable(save, index, container, id, select, element)
     }
 }
 

@@ -1,4 +1,4 @@
-export const db = [
+const db = [
   {
     "id": "5c2286fb23e87be312d55d9a",
     "name": {

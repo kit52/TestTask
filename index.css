@@ -125,6 +125,16 @@ label {
   display: none;
 }
 .col-4 {
-  width: 40px;
+  width: 5%;
   height: 40px;
+}
+.col-1,
+.col-2 {
+  width: 10%;
+}
+
+tr:hover,
+th:hover,
+.pageNumber:hover {
+  background-color: rgba(150, 150, 151, 0.37);
 }
