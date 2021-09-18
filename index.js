@@ -1,7 +1,7 @@
 
 
 let currentPage = 0;
-let arr = [...db];
+const arr = [...db];
 let sortDirection = false;
 const firstName = document.querySelector("#firstName");
 const lastName = document.querySelector('#lastName');
